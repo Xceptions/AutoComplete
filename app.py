@@ -2,11 +2,21 @@ from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from flask_caching import Cache
 
+import redis
+
 from core.autocomplete import AutoComplete
 
 
 app = Flask(__name__)
 CORS(app)
+
+cache = Cache(app, config={
+    'CACHE_TYPE': 'redis',
+    'CACHE_KEY_PREFIX': 'server1',
+    'CACHE_REDIS_HOST': 'localhost',
+    'CACHE_REDIS_PORT': '6379',
+    'CACHE_REDIS_URL': 'redis://localhost:6379/'
+})
 
 app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2"
 
@@ -24,6 +34,23 @@ def get_index_html_template():
 
 @app.route('/train', methods=['POST'])
 def train_corpus():
+    """ 
+        Returns a map (dict) of [str, str]
+        This calls the train method in `autocomplete` on the input corpus
+        The function performs the following steps:
+            - receives the request from the client
+            - calls the train method of the AutoComplete class of which,
+                if successful, will add the corpus in the appropriate
+                format to the MaxWordGraph and CorpusGraph collections
+            - it returns these result of the train operation as a json
+                object to the client
+        Args (retrieved via the POST method):
+            corpus: str - the string intended for adding
+        Returns
+            Dict: a map/dict[str,List[str]] with 'result' as key and
+                response as value. This response is the status of training
+                the corpus
+    """
     if request.method == 'POST':
         data = request.get_json()['input_corpus']
         response = AutoComplete( app.config["MONGO_URI"] ).train(data)
@@ -34,19 +61,19 @@ def train_corpus():
 def drop_db():
     """ 
         Returns a map (dict) of [str, str]
-
         This function drops both collections from the db
         The function performs the following steps:
             - receives the request from the client
-            - calls the drop method of the AutoComplete
-                class of which, if successful, will drop the MaxWordGraph
-                and CorpusGraph collections
+            - calls the drop method of the AutoComplete class of which,
+                if successful, will drop the MaxWordGraph and CorpusGraph
+                collections
             - it returns these documents as a json object to the client
         Args:
             None
         Returns
-            Dict: a map/dict[str,List[str]] with 'result' as key and response as value.
-                This response is the status of dropping the two collections from the db
+            Dict: a map/dict[str,List[str]] with 'result' as key and
+                response as value. This response is the status of dropping
+                the two collections from the db
     """
     response = AutoComplete( app.config["MONGO_URI"] ).drop_db()
     return jsonify({'result': response})
@@ -54,7 +81,7 @@ def drop_db():
 
 
 @app.route('/complete/<phrase>')
-# @cache.cached(timeout=10)
+@cache.cached(timeout=10)
 def complete(phrase):
     """ 
         Returns a map (dict) of [str, str]
