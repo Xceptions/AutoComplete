@@ -33,8 +33,6 @@ There are two collections in our DB
 class CorpusGraph(TypedDict):
     word: str
     graph: Dict[str, int]
-    maxWord: str
-    maxCount: int
 
 class MaxWordGraph(TypedDict):
     doctype: str

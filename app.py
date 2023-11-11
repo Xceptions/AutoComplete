@@ -30,5 +30,52 @@ def train_corpus():
         return jsonify({'result': response})
 
 
+@app.route('/dropdb')
+def drop_db():
+    """ 
+        Returns a map (dict) of [str, str]
+
+        This function drops both collections from the db
+        The function performs the following steps:
+            - receives the request from the client
+            - calls the drop method of the AutoComplete
+                class of which, if successful, will drop the MaxWordGraph
+                and CorpusGraph collections
+            - it returns these documents as a json object to the client
+        Args:
+            None
+        Returns
+            Dict: a map/dict[str,List[str]] with 'result' as key and response as value.
+                This response is the status of dropping the two collections from the db
+    """
+    response = AutoComplete( app.config["MONGO_URI"] ).drop_db()
+    return jsonify({'result': response})
+
+
+
+@app.route('/complete/<phrase>')
+# @cache.cached(timeout=10)
+def complete(phrase):
+    """ 
+        Returns a map (dict) of [str, str]
+
+        This function drops both collections from the db
+        The function performs the following steps:
+            - receives the request data `question` from the client
+            - calls the get_answer method of the Info which will
+                fetch the answer to the question and return it
+            - it returns the answer as a json object to the client
+        Args:
+            question: str - Question asked from the client
+        Returns
+            Dict: [str,List[str]] with 'result' as key and response
+                as value. This response is the answer to the question
+                received from the client
+    """
+    response = AutoComplete( app.config["MONGO_URI"] ).complete( phrase )
+    return jsonify({'result': response})
+
+
+
 if __name__ == "__main__":
     app.run()
