@@ -2,7 +2,7 @@
 
 **Optimal Completion System for predicting the next word after a user types in a word**
 
-<!-- ![alt text](./images/DSdesign.png) -->
+![Auto Complete Design](./images/AutoCompleteDesign.png)
 
 Tools:
 
