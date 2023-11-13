@@ -124,8 +124,9 @@ class AutoComplete:
         """
         word_map = {}
         predictions = {}
-        for doc in predictions_doc:
-            if len(doc) > 0:
+        
+        if len(list(predictions_doc)) > 0:
+            for doc in predictions_doc:
                 predictions = predictions_doc[0]["predictions"]
 
         for idx in range(len(corpus)-1):
